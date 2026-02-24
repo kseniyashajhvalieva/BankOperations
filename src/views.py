@@ -2,7 +2,9 @@ import json
 import logging
 from datetime import datetime
 from typing import Any, Dict
+
 import pandas as pd
+
 from src.utils import filter_by_date, read_excel
 
 logger = logging.getLogger(__name__)
@@ -35,4 +37,17 @@ def main_page(date_str: str) -> Dict[str, Any]:
     else:
         greeting = "Доброй ночи"
 
-    return {"greeting": greeting, "period": f"{first_day} - {end_day}"}
+    # Данные по картам (расходы и кешбэк)
+    cards_data = []
+    # Только расходы (отрицательные суммы)
+    expenses = df_period[df_period["Сумма операции"] < 0].copy()
+    if not expenses.empty:
+        for card in expenses["Номер карты"].dropna().unique():
+            card_trans = expenses[expenses["Номер карты"] == card]
+            total_spent = abs(card_trans["Сумма операции"].sum())
+            cashback = round(total_spent / 100, 2)  # 1 рубль на каждые 100
+            cards_data.append(
+                {"last_digits": card[-4:], "total_spent": round(total_spent, 2), "cashback": cashback}
+            )
+
+    return {"greeting": greeting, "cards": cards_data}
