@@ -1,7 +1,7 @@
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import pandas as pd
 
@@ -15,21 +15,66 @@ from src.utils import (
 logger = logging.getLogger(__name__)
 
 
+def get_greeting_by_hour(hour: int) -> str:
+    """Возвращает приветствие в зависимости от часа."""
+    if 5 <= hour < 12:
+        return "Доброе утро"
+    elif 12 <= hour < 18:
+        return "Добрый день"
+    elif 18 <= hour < 23:
+        return "Добрый вечер"
+    else:
+        return "Доброй ночи"
+
+
+def calculate_cards_data(transactions: pd.DataFrame) -> List[Dict[str, Any]]:
+    """Рассчитывает данные по картам: расходы и кешбэк."""
+    cards_data = []
+    expenses = transactions[transactions["Сумма операции"] < 0].copy()
+
+    if not expenses.empty:
+        for card in expenses["Номер карты"].dropna().unique():
+            card_trans = expenses[expenses["Номер карты"] == card]
+            total_spent = abs(card_trans["Сумма операции"].sum())
+            cashback = round(total_spent / 100, 2)
+            cards_data.append(
+                {"last_digits": card[-4:], "total_spent": round(total_spent, 2), "cashback": cashback}
+            )
+
+    return cards_data
+
+
+def get_top_transactions(transactions: pd.DataFrame, n: int = 5) -> List[Dict[str, Any]]:
+    """Возвращает топ-N транзакций по абсолютной сумме."""
+    transactions = transactions.copy()
+    transactions["abs_amount"] = transactions["Сумма операции"].abs()
+    top_n = transactions.nlargest(n, "abs_amount")[
+        ["Дата операции", "Сумма операции", "Категория", "Описание"]
+    ].to_dict(orient="records")
+    return top_n
+
+
+def load_user_settings() -> Dict[str, Any]:
+    """Загружает настройки пользователя из файла."""
+    try:
+        with open("user_settings.json", "r", encoding="utf-8") as f:
+            settings = json.load(f)
+        logger.debug("Настройки пользователя загружены")
+        return settings
+    except FileNotFoundError:
+        logger.error("Файл user_settings.json не найден, используются стандартные настройки")
+        return {"user_currencies": ["USD", "EUR"], "user_stocks": ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]}
+    except json.JSONDecodeError:
+        logger.error("Ошибка парсинга user_settings.json, используются стандартные настройки")
+        return {"user_currencies": ["USD", "EUR"], "user_stocks": ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]}
+
+
 def main_page(date_str: str) -> Dict[str, Any]:
     """Главная страница: возвращает JSON с данными за месяц."""
     logger.info(f"Запуск main_page с датой: {date_str}")
 
-    try:
-        # Загружаем настройки пользователя
-        with open("user_settings.json", "r", encoding="utf-8") as f:
-            settings = json.load(f)
-        logger.debug("Настройки пользователя загружены")
-    except FileNotFoundError:
-        logger.error("Файл user_settings.json не найден")
-        settings = {"user_currencies": ["USD", "EUR"], "user_stocks": ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]}
-    except json.JSONDecodeError:
-        logger.error("Ошибка парсинга user_settings.json")
-        settings = {"user_currencies": ["USD", "EUR"], "user_stocks": ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]}
+    # Загружаем настройки пользователя
+    settings = load_user_settings()
 
     try:
         # Читаем Excel
@@ -52,36 +97,13 @@ def main_page(date_str: str) -> Dict[str, Any]:
         return {"error": "Ошибка обработки даты"}
 
     # Приветствие по времени
-    hour = input_date.hour
-    if 5 <= hour < 12:
-        greeting = "Доброе утро"
-    elif 12 <= hour < 18:
-        greeting = "Добрый день"
-    elif 18 <= hour < 23:
-        greeting = "Добрый вечер"
-    else:
-        greeting = "Доброй ночи"
+    greeting = get_greeting_by_hour(input_date.hour)
 
-    # Данные по картам (расходы и кешбэк)
-    cards_data = []
-    # Только расходы (отрицательные суммы)
-    expenses = df_period[df_period["Сумма операции"] < 0].copy()
-    if not expenses.empty:
-        for card in expenses["Номер карты"].dropna().unique():
-            card_trans = expenses[expenses["Номер карты"] == card]
-            total_spent = abs(card_trans["Сумма операции"].sum())
-            cashback = round(total_spent / 100, 2)  # 1 рубль на каждые 100
-            cards_data.append(
-                {"last_digits": card[-4:], "total_spent": round(total_spent, 2), "cashback": cashback}
-            )
-        logger.debug(f"Данные по картам: {cards_data}")
+    # Данные по картам
+    cards_data = calculate_cards_data(df_period)
 
-    # Топ-5 транзакций по сумме (по модулю, любые операции)
-    df_period["abs_amount"] = df_period["Сумма операции"].abs()
-    top5 = df_period.nlargest(5, "abs_amount")[
-        ["Дата операции", "Сумма операции", "Категория", "Описание"]
-    ].to_dict(orient="records")
-    logger.debug(f"Топ-5 транзакций: {top5}")
+    # Топ-5 транзакций
+    top5 = get_top_transactions(df_period, 5)
 
     # Курсы валют и акции
     try:
