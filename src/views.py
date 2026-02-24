@@ -5,7 +5,12 @@ from typing import Any, Dict
 
 import pandas as pd
 
-from src.utils import filter_by_date, read_excel
+from src.utils import (
+    filter_by_date,
+    get_currency_rates,
+    get_stock_prices,
+    read_excel,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -56,5 +61,17 @@ def main_page(date_str: str) -> Dict[str, Any]:
         ["Дата операции", "Сумма операции", "Категория", "Описание"]
     ].to_dict(orient="records")
 
-    # Пока возвращаем приветствие, карты и топ-5
-    return {"greeting": greeting, "cards": cards_data, "top_transactions": top5}
+    # Курсы валют и акции
+    currencies = get_currency_rates(settings["user_currencies"])
+    stocks = get_stock_prices(settings["user_stocks"])
+
+    result = {
+        "greeting": greeting,
+        "cards": cards_data,
+        "top_transactions": top5,
+        "currency_rates": currencies,
+        "stock_prices": stocks,
+    }
+
+    logger.info("JSON для главной страницы успешно сформирован")
+    return result
