@@ -17,19 +17,39 @@ logger = logging.getLogger(__name__)
 
 def main_page(date_str: str) -> Dict[str, Any]:
     """Главная страница: возвращает JSON с данными за месяц."""
-    # Загружаем настройки пользователя
-    with open("user_settings.json", "r", encoding="utf-8") as f:
-        settings = json.load(f)
+    logger.info(f"Запуск main_page с датой: {date_str}")
 
-    # Читаем Excel
-    df = read_excel("data/operations.xlsx")
+    try:
+        # Загружаем настройки пользователя
+        with open("user_settings.json", "r", encoding="utf-8") as f:
+            settings = json.load(f)
+        logger.debug("Настройки пользователя загружены")
+    except FileNotFoundError:
+        logger.error("Файл user_settings.json не найден")
+        settings = {"user_currencies": ["USD", "EUR"], "user_stocks": ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]}
+    except json.JSONDecodeError:
+        logger.error("Ошибка парсинга user_settings.json")
+        settings = {"user_currencies": ["USD", "EUR"], "user_stocks": ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]}
 
-    # Определяем период: с 1-го числа месяца по входящую дату
-    input_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-    first_day = input_date.replace(day=1).strftime("%d.%m.%Y")
-    end_day = input_date.strftime("%d.%m.%Y")
+    try:
+        # Читаем Excel
+        df = read_excel("data/operations.xlsx")
+        logger.info(f"Загружено {len(df)} транзакций")
+    except Exception as e:
+        logger.error(f"Ошибка загрузки Excel: {e}")
+        return {"error": "Не удалось загрузить данные"}
 
-    df_period = filter_by_date(df, first_day, end_day)
+    try:
+        # Определяем период: с 1-го числа месяца по входящую дату
+        input_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+        first_day = input_date.replace(day=1).strftime("%d.%m.%Y")
+        end_day = input_date.strftime("%d.%m.%Y")
+
+        df_period = filter_by_date(df, first_day, end_day)
+        logger.info(f"Отфильтровано {len(df_period)} транзакций за период {first_day} - {end_day}")
+    except Exception as e:
+        logger.error(f"Ошибка фильтрации по дате: {e}")
+        return {"error": "Ошибка обработки даты"}
 
     # Приветствие по времени
     hour = input_date.hour
@@ -54,16 +74,29 @@ def main_page(date_str: str) -> Dict[str, Any]:
             cards_data.append(
                 {"last_digits": card[-4:], "total_spent": round(total_spent, 2), "cashback": cashback}
             )
+        logger.debug(f"Данные по картам: {cards_data}")
 
     # Топ-5 транзакций по сумме (по модулю, любые операции)
     df_period["abs_amount"] = df_period["Сумма операции"].abs()
     top5 = df_period.nlargest(5, "abs_amount")[
         ["Дата операции", "Сумма операции", "Категория", "Описание"]
     ].to_dict(orient="records")
+    logger.debug(f"Топ-5 транзакций: {top5}")
 
     # Курсы валют и акции
-    currencies = get_currency_rates(settings["user_currencies"])
-    stocks = get_stock_prices(settings["user_stocks"])
+    try:
+        currencies = get_currency_rates(settings["user_currencies"])
+        logger.debug(f"Курсы валют: {currencies}")
+    except Exception as e:
+        logger.error(f"Ошибка получения курсов валют: {e}")
+        currencies = [{"currency": c, "rate": 0} for c in settings["user_currencies"]]
+
+    try:
+        stocks = get_stock_prices(settings["user_stocks"])
+        logger.debug(f"Цены акций: {stocks}")
+    except Exception as e:
+        logger.error(f"Ошибка получения цен акций: {e}")
+        stocks = [{"stock": s, "price": 0} for s in settings["user_stocks"]]
 
     result = {
         "greeting": greeting,
