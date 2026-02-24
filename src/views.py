@@ -50,4 +50,11 @@ def main_page(date_str: str) -> Dict[str, Any]:
                 {"last_digits": card[-4:], "total_spent": round(total_spent, 2), "cashback": cashback}
             )
 
-    return {"greeting": greeting, "cards": cards_data}
+    # Топ-5 транзакций по сумме (по модулю, любые операции)
+    df_period["abs_amount"] = df_period["Сумма операции"].abs()
+    top5 = df_period.nlargest(5, "abs_amount")[
+        ["Дата операции", "Сумма операции", "Категория", "Описание"]
+    ].to_dict(orient="records")
+
+    # Пока возвращаем приветствие, карты и топ-5
+    return {"greeting": greeting, "cards": cards_data, "top_transactions": top5}
