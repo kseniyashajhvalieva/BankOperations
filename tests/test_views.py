@@ -1,5 +1,4 @@
 import pytest
-
 from unittest.mock import mock_open, patch
 import pandas as pd
 
@@ -12,7 +11,7 @@ from src.views import (
 )
 
 
-def test_get_greeting_by_hour():
+def test_get_greeting_by_hour() -> None:
     """Тест функции приветствия по времени."""
     assert get_greeting_by_hour(6) == "Доброе утро"
     assert get_greeting_by_hour(12) == "Добрый день"
@@ -21,7 +20,7 @@ def test_get_greeting_by_hour():
     assert get_greeting_by_hour(3) == "Доброй ночи"
 
 
-def test_calculate_cards_data():
+def test_calculate_cards_data() -> None:
     """Тест расчёта данных по картам."""
     # Создаём тестовый DataFrame
     data = {
@@ -39,7 +38,7 @@ def test_calculate_cards_data():
     assert result[0]["cashback"] == 15.0
 
 
-def test_get_top_transactions():
+def test_get_top_transactions() -> None:
     """Тест получения топ-5 транзакций."""
     data = {
         "Дата операции": ["01.01.2023", "02.01.2023", "03.01.2023"],
@@ -56,19 +55,21 @@ def test_get_top_transactions():
 
 
 @patch("builtins.open", new_callable=mock_open, read_data='{"user_currencies": ["USD"], "user_stocks": ["AAPL"]}')
-def test_load_user_settings_success(mock_file):
+def test_load_user_settings_success(mock_file) -> None:
     """Тест успешной загрузки настроек."""
     settings = load_user_settings()
     assert settings["user_currencies"] == ["USD"]
     assert settings["user_stocks"] == ["AAPL"]
+    mock_file.assert_called_once_with("user_settings.json", "r", encoding="utf-8")
 
 
 @patch("builtins.open", side_effect=FileNotFoundError)
-def test_load_user_settings_not_found(mock_file):
+def test_load_user_settings_not_found(mock_file) -> None:
     """Тест загрузки при отсутствии файла."""
     settings = load_user_settings()
     assert "USD" in settings["user_currencies"]
     assert "AAPL" in settings["user_stocks"]
+    mock_file.assert_called_once_with("user_settings.json", "r", encoding="utf-8")
 
 
 @patch("src.views.read_excel")
@@ -82,7 +83,7 @@ def test_main_page_success(
     mock_get_currencies,
     mock_filter_date,
     mock_read_excel
-):
+) -> None:
     """Тест успешного выполнения main_page."""
     # Настройка моков
     mock_load_settings.return_value = {

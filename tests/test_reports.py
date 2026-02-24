@@ -6,14 +6,14 @@ from unittest.mock import patch, mock_open
 from src.reports import report_to_file, spending_by_category
 
 
-def test_spending_by_category_empty():
+def test_spending_by_category_empty() -> None:
     """Тест с пустым DataFrame."""
     df = pd.DataFrame(columns=["Категория", "Сумма операции", "Дата операции"])
     result = spending_by_category(df, "Супермаркеты", "15.01.2024")
     assert len(result) == 0
 
 
-def test_spending_by_category_filter():
+def test_spending_by_category_filter() -> None:
     """Тест фильтрации по категории и дате."""
     # Создаём тестовые данные
     data = {
@@ -39,7 +39,7 @@ def test_spending_by_category_filter():
     assert result.iloc[1]["Сумма операции"] == -500
 
 
-def test_spending_by_category_no_date():
+def test_spending_by_category_no_date() -> None:
     """Тест с датой по умолчанию (текущая)."""
     # Патчим datetime.now() для предсказуемости
     with patch('src.reports.datetime') as mock_datetime:
@@ -58,7 +58,7 @@ def test_spending_by_category_no_date():
 
 
 @patch("builtins.open", new_callable=mock_open)
-def test_report_to_file_decorator(mock_file):
+def test_report_to_file_decorator(mock_file) -> None:
     """Тест декоратора report_to_file."""
 
     @report_to_file("test_report.json")
@@ -72,7 +72,7 @@ def test_report_to_file_decorator(mock_file):
     mock_file().write.assert_called()
 
 
-def test_report_to_file_default_name():
+def test_report_to_file_default_name() -> None:
     """Тест декоратора с именем файла по умолчанию."""
     with patch("builtins.open", new_callable=mock_open) as mock_file:
         with patch("src.reports.datetime") as mock_datetime:

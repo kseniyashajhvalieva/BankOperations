@@ -12,7 +12,7 @@ from src.utils import (
 )
 
 
-def test_read_excel():
+def test_read_excel() -> None:
     """Тест чтения Excel-файла."""
     # Создаём тестовый файл
     test_data = {
@@ -36,7 +36,7 @@ def test_read_excel():
     os.remove("test_operations.xlsx")
 
 
-def test_filter_by_date():
+def test_filter_by_date() -> None:
     """Тест фильтрации по дате."""
     # Создаём тестовый DataFrame
     data = {
@@ -59,7 +59,7 @@ def test_filter_by_date():
 
 
 @patch("requests.get")
-def test_get_currency_rates(mock_get):
+def test_get_currency_rates(mock_get) -> None:
     """Тест получения курсов валют."""
     # Настройка мока
     mock_response = MagicMock()
@@ -81,7 +81,7 @@ def test_get_currency_rates(mock_get):
 
 
 @patch("requests.get")
-def test_get_currency_rates_error(mock_get):
+def test_get_currency_rates_error(mock_get) -> None:
     """Тест обработки ошибки API валют."""
     mock_get.side_effect = Exception("API Error")
 
@@ -94,7 +94,7 @@ def test_get_currency_rates_error(mock_get):
 
 @patch("requests.get")
 @patch.dict(os.environ, {"STOCK_API_KEY": "test_key"})
-def test_get_stock_prices(mock_get):
+def test_get_stock_prices(mock_get) -> None:
     """Тест получения цен акций."""
     # Настройка мока
     mock_response = MagicMock()
@@ -113,7 +113,7 @@ def test_get_stock_prices(mock_get):
 
 @patch("requests.get")
 @patch.dict(os.environ, {"STOCK_API_KEY": "test_key"})
-def test_get_stock_prices_error(mock_get):
+def test_get_stock_prices_error(mock_get) -> None:
     """Тест обработки ошибки API акций."""
     mock_get.side_effect = Exception("API Error")
 
@@ -125,7 +125,7 @@ def test_get_stock_prices_error(mock_get):
 
 
 @patch.dict(os.environ, {}, clear=True)
-def test_get_stock_prices_no_key():
+def test_get_stock_prices_no_key() -> None:
     """Тест без API-ключа."""
     result = get_stock_prices(["AAPL"])
     assert len(result) == 1
