@@ -1,15 +1,10 @@
-import pytest
-import pandas as pd
-from unittest.mock import patch, MagicMock
-from datetime import datetime
 import os
+from datetime import datetime
+from unittest.mock import MagicMock, patch
 
-from src.utils import (
-    read_excel,
-    filter_by_date,
-    get_currency_rates,
-    get_stock_prices
-)
+import pandas as pd
+
+from src.utils import filter_by_date, get_currency_rates, get_stock_prices, read_excel
 
 
 def test_read_excel() -> None:
@@ -19,7 +14,7 @@ def test_read_excel() -> None:
         "Дата операции": ["31.12.2021 16:44:00"],
         "Сумма операции": [-160.89],
         "Категория": ["Супермаркеты"],
-        "Описание": ["Колхоз"]
+        "Описание": ["Колхоз"],
     }
     test_df = pd.DataFrame(test_data)
     test_df.to_excel("test_operations.xlsx", index=False)
@@ -40,12 +35,8 @@ def test_filter_by_date() -> None:
     """Тест фильтрации по дате."""
     # Создаём тестовый DataFrame
     data = {
-        "Дата операции": [
-            datetime(2021, 12, 1),
-            datetime(2021, 12, 15),
-            datetime(2021, 12, 31)
-        ],
-        "Сумма операции": [-100, -200, -300]
+        "Дата операции": [datetime(2021, 12, 1), datetime(2021, 12, 15), datetime(2021, 12, 31)],
+        "Сумма операции": [-100, -200, -300],
     }
     df = pd.DataFrame(data)
 
@@ -63,9 +54,7 @@ def test_get_currency_rates(mock_get) -> None:
     """Тест получения курсов валют."""
     # Настройка мока
     mock_response = MagicMock()
-    mock_response.json.return_value = {
-        "rates": {"USD": 90.5, "EUR": 99.8}
-    }
+    mock_response.json.return_value = {"rates": {"USD": 90.5, "EUR": 99.8}}
     mock_response.raise_for_status.return_value = None
     mock_get.return_value = mock_response
 
@@ -98,9 +87,7 @@ def test_get_stock_prices(mock_get) -> None:
     """Тест получения цен акций."""
     # Настройка мока
     mock_response = MagicMock()
-    mock_response.json.return_value = {
-        "Global Quote": {"05. price": "150.5"}
-    }
+    mock_response.json.return_value = {"Global Quote": {"05. price": "150.5"}}
     mock_response.raise_for_status.return_value = None
     mock_get.return_value = mock_response
 

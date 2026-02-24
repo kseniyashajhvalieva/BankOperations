@@ -5,12 +5,7 @@ from typing import Any, Dict, List
 
 import pandas as pd
 
-from src.utils import (
-    filter_by_date,
-    get_currency_rates,
-    get_stock_prices,
-    read_excel,
-)
+from src.utils import filter_by_date, get_currency_rates, get_stock_prices, read_excel
 
 logger = logging.getLogger(__name__)
 
@@ -37,9 +32,7 @@ def calculate_cards_data(transactions: pd.DataFrame) -> List[Dict[str, Any]]:
             card_trans = expenses[expenses["Номер карты"] == card]
             total_spent = abs(card_trans["Сумма операции"].sum())
             cashback = round(total_spent / 100, 2)
-            cards_data.append(
-                {"last_digits": card[-4:], "total_spent": round(total_spent, 2), "cashback": cashback}
-            )
+            cards_data.append({"last_digits": card[-4:], "total_spent": round(total_spent, 2), "cashback": cashback})
 
     return cards_data
 
@@ -51,7 +44,7 @@ def get_top_transactions(transactions: pd.DataFrame, n: int = 5) -> List[Dict[st
     top_n = transactions.nlargest(n, "abs_amount")[
         ["Дата операции", "Сумма операции", "Категория", "Описание"]
     ].to_dict(orient="records")
-    return top_n
+    return top_n  # type: ignore[return-value]
 
 
 def load_user_settings() -> Dict[str, Any]:
@@ -60,7 +53,7 @@ def load_user_settings() -> Dict[str, Any]:
         with open("user_settings.json", "r", encoding="utf-8") as f:
             settings = json.load(f)
         logger.debug("Настройки пользователя загружены")
-        return settings
+        return settings  # type: ignore[no-any-return]
     except FileNotFoundError:
         logger.error("Файл user_settings.json не найден, используются стандартные настройки")
         return {"user_currencies": ["USD", "EUR"], "user_stocks": ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]}

@@ -2,7 +2,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from functools import wraps
-from typing import Callable, Optional, Any
+from typing import Any, Callable, Optional
 
 import pandas as pd
 
@@ -17,9 +17,10 @@ def report_to_file(filename: Optional[str] = None) -> Callable:
         filename: Имя файла для записи. Если не указано,
                  генерируется автоматически.
     """
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             # Выполняем функцию
             result = func(*args, **kwargs)
 
@@ -48,9 +49,7 @@ def report_to_file(filename: Optional[str] = None) -> Callable:
     return decorator
 
 
-def spending_by_category(transactions: pd.DataFrame,
-                         category: str,
-                         date: Optional[str] = None) -> pd.DataFrame:
+def spending_by_category(transactions: pd.DataFrame, category: str, date: Optional[str] = None) -> pd.DataFrame:
     """
     Возвращает траты по заданной категории за последние три месяца.
 
@@ -76,10 +75,10 @@ def spending_by_category(transactions: pd.DataFrame,
 
     # Фильтруем транзакции
     filtered = transactions[
-        (transactions["Категория"] == category) &
-        (transactions["Сумма операции"] < 0) &  # только расходы
-        (transactions["Дата операции"] >= start_date) &
-        (transactions["Дата операции"] <= end_date)
+        (transactions["Категория"] == category)
+        & (transactions["Сумма операции"] < 0)  # только расходы
+        & (transactions["Дата операции"] >= start_date)
+        & (transactions["Дата операции"] <= end_date)
     ].copy()
 
     logger.info(f"Найдено {len(filtered)} транзакций по категории {category}")

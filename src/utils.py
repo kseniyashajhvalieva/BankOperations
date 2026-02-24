@@ -1,7 +1,7 @@
-import pandas as pd
-from typing import List, Dict, Any
-from datetime import datetime
 import os
+from typing import Any, Dict, List
+
+import pandas as pd
 import requests
 from dotenv import load_dotenv
 
@@ -12,15 +12,15 @@ def read_excel(filepath: str) -> pd.DataFrame:
     """Читает Excel-файл с транзакциями."""
     df = pd.read_excel(filepath)
     # Преобразуем строку с датой в тип datetime для фильтрации
-    df["Дата операции"] = pd.to_datetime(df["Дата операции"], format='%d.%m.%Y %H:%M:%S')
+    df["Дата операции"] = pd.to_datetime(df["Дата операции"], format="%d.%m.%Y %H:%M:%S")
     return df
 
 
 def filter_by_date(df: pd.DataFrame, start: str, end: str) -> pd.DataFrame:
     """Фильтрует транзакции по дате."""
     # Формат даты: 'DD.MM.YYYY'
-    start_date = pd.to_datetime(start, format='%d.%m.%Y')
-    end_date = pd.to_datetime(end, format='%d.%m.%Y')
+    start_date = pd.to_datetime(start, format="%d.%m.%Y")
+    end_date = pd.to_datetime(end, format="%d.%m.%Y")
 
     mask = (df["Дата операции"] >= start_date) & (df["Дата операции"] <= end_date)
     return df.loc[mask]

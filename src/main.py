@@ -2,28 +2,25 @@ import json
 import logging
 from pprint import pprint
 
+from src.reports import report_to_file, spending_by_category
+from src.services import simple_search
 from src.utils import read_excel
 from src.views import main_page
-from src.services import simple_search
-from src.reports import spending_by_category, report_to_file
 
 # Настройка логирования
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
 @report_to_file("category_report.json")
-def demo_spending_by_category():
+def demo_spending_by_category() -> list:
     """Демонстрация отчёта по категории."""
     df = read_excel("data/operations.xlsx")
     result = spending_by_category(df, "Супермаркеты", "31.12.2021")
     return result.to_dict(orient="records")
 
 
-def main():
+def main() -> None:
     """Главная функция для демонстрации всех возможностей."""
     print("=" * 50)
     print("ДЕМОНСТРАЦИЯ РАБОТЫ ПРИЛОЖЕНИЯ")
@@ -44,7 +41,7 @@ def main():
     print("-" * 30)
     df = read_excel("data/operations.xlsx")
     transactions = df.to_dict(orient="records")
-    search_result = simple_search("МТС", transactions)
+    search_result = simple_search("МТС", transactions)  # type: ignore[arg-type]
     print(f"Найдено транзакций с 'МТС': {len(search_result)}")
     if search_result:
         print("Первая найденная:")

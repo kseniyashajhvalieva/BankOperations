@@ -1,4 +1,3 @@
-import pytest
 from src.services import simple_search
 
 
@@ -15,11 +14,11 @@ def test_simple_search_empty_transactions() -> None:
     assert result == []
 
 
-def test_simple_search_found_in_description() ->None:
+def test_simple_search_found_in_description() -> None:
     """Поиск находит транзакцию по описанию."""
     transactions = [
         {"Описание": "кофе в старбакс", "Категория": "кафе"},
-        {"Описание": "молоко", "Категория": "супермаркеты"}
+        {"Описание": "молоко", "Категория": "супермаркеты"},
     ]
     result = simple_search("кофе", transactions)
     assert len(result) == 1
@@ -28,10 +27,7 @@ def test_simple_search_found_in_description() ->None:
 
 def test_simple_search_found_in_category() -> None:
     """Поиск находит транзакцию по категории."""
-    transactions = [
-        {"Описание": "латте", "Категория": "кафе"},
-        {"Описание": "хлеб", "Категория": "супермаркеты"}
-    ]
+    transactions = [{"Описание": "латте", "Категория": "кафе"}, {"Описание": "хлеб", "Категория": "супермаркеты"}]
     result = simple_search("кафе", transactions)
     assert len(result) == 1
     assert result[0]["Категория"] == "кафе"
@@ -41,7 +37,7 @@ def test_simple_search_case_insensitive() -> None:
     """Поиск не чувствителен к регистру."""
     transactions = [
         {"Описание": "Кофе в Старбакс", "Категория": "Кафе"},
-        {"Описание": "Молоко", "Категория": "Супермаркеты"}
+        {"Описание": "Молоко", "Категория": "Супермаркеты"},
     ]
     result = simple_search("кофе", transactions)
     assert len(result) == 1
@@ -53,7 +49,7 @@ def test_simple_search_multiple_results() -> None:
     transactions = [
         {"Описание": "кофе", "Категория": "кафе"},
         {"Описание": "кофемашина", "Категория": "техника"},
-        {"Описание": "чай", "Категория": "продукты"}
+        {"Описание": "чай", "Категория": "продукты"},
     ]
     result = simple_search("кофе", transactions)
     assert len(result) == 2

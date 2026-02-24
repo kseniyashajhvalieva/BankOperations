@@ -1,7 +1,7 @@
-import pytest
-import pandas as pd
 from datetime import datetime
-from unittest.mock import patch, mock_open
+from unittest.mock import mock_open, patch
+
+import pandas as pd
 
 from src.reports import report_to_file, spending_by_category
 
@@ -19,12 +19,7 @@ def test_spending_by_category_filter() -> None:
     data = {
         "Категория": ["Супермаркеты", "Супермаркеты", "Аптеки", "Супермаркеты"],
         "Сумма операции": [-1000, -500, -300, 200],  # 200 - доход, не должен попасть
-        "Дата операции": [
-            datetime(2024, 1, 10),
-            datetime(2024, 2, 15),
-            datetime(2024, 1, 20),
-            datetime(2024, 1, 25)
-        ]
+        "Дата операции": [datetime(2024, 1, 10), datetime(2024, 2, 15), datetime(2024, 1, 20), datetime(2024, 1, 25)],
     }
     df = pd.DataFrame(data)
 
@@ -42,14 +37,14 @@ def test_spending_by_category_filter() -> None:
 def test_spending_by_category_no_date() -> None:
     """Тест с датой по умолчанию (текущая)."""
     # Патчим datetime.now() для предсказуемости
-    with patch('src.reports.datetime') as mock_datetime:
+    with patch("src.reports.datetime") as mock_datetime:
         mock_datetime.now.return_value = datetime(2024, 3, 15)
         mock_datetime.strptime = datetime.strptime
 
         data = {
             "Категория": ["Супермаркеты"],
             "Сумма операции": [-1000],
-            "Дата операции": [datetime(2024, 1, 10)]  # в периоде
+            "Дата операции": [datetime(2024, 1, 10)],  # в периоде
         }
         df = pd.DataFrame(data)
 

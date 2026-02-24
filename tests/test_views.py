@@ -1,14 +1,8 @@
-import pytest
 from unittest.mock import mock_open, patch
+
 import pandas as pd
 
-from src.views import (
-    get_greeting_by_hour,
-    calculate_cards_data,
-    get_top_transactions,
-    load_user_settings,
-    main_page
-)
+from src.views import calculate_cards_data, get_greeting_by_hour, get_top_transactions, load_user_settings, main_page
 
 
 def test_get_greeting_by_hour() -> None:
@@ -78,18 +72,11 @@ def test_load_user_settings_not_found(mock_file) -> None:
 @patch("src.views.get_stock_prices")
 @patch("src.views.load_user_settings")
 def test_main_page_success(
-    mock_load_settings,
-    mock_get_stocks,
-    mock_get_currencies,
-    mock_filter_date,
-    mock_read_excel
+    mock_load_settings, mock_get_stocks, mock_get_currencies, mock_filter_date, mock_read_excel
 ) -> None:
     """Тест успешного выполнения main_page."""
     # Настройка моков
-    mock_load_settings.return_value = {
-        "user_currencies": ["USD"],
-        "user_stocks": ["AAPL"]
-    }
+    mock_load_settings.return_value = {"user_currencies": ["USD"], "user_stocks": ["AAPL"]}
 
     # Создаём тестовый DataFrame
     data = {
@@ -97,7 +84,7 @@ def test_main_page_success(
         "Сумма операции": [-1000],
         "Дата операции": ["31.12.2023"],
         "Категория": ["Супермаркеты"],
-        "Описание": ["Магнит"]
+        "Описание": ["Магнит"],
     }
     test_df = pd.DataFrame(data)
 
